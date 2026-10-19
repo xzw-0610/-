@@ -1,0 +1,40 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch: # 允许你手动点击按钮
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter 3.47.2
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.47.2  # 文档严格要求的版本
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 生成缺失的安卓原生配置（因为作者把有些配置 gitignore 了）
+      - name: Ensure Android folders
+        run: flutter create --platforms android --project-name liusound .
+
+      - name: Build Release APK
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiuSound-APK
+          path: build/app/outputs/flutter-apk/*.apk
