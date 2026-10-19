@@ -1,7 +1,7 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch: # 允许你手动点击按钮
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,22 +19,21 @@ jobs:
       - name: Set up Flutter 3.47.2
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.47.2  # 文档严格要求的版本
+          flutter-version: 3.47.2
           channel: stable
           cache: true
 
       - name: Install dependencies
         run: flutter pub get
 
-      # 生成缺失的安卓原生配置（因为作者把有些配置 gitignore 了）
-      - name: Ensure Android folders
-        run: flutter create --platforms android --project-name liusound .
+      # 注意：这里删除了 flutter create 那句覆盖原文件的危险命令！
 
       - name: Build Release APK
-        run: flutter build apk --release
+        # 加上 --split-per-abi，按手机架构分开打包，体积会小一半多
+        run: flutter build apk --release --split-per-abi
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: LiuSound-APK
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/flutter-apk/*-release.apk
